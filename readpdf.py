@@ -203,7 +203,9 @@ def tag_pic(image):
             if len(imgHistory) > 0:
                 img = imgHistory.pop()
                 dst = img[dy:dy + show_h, dx:dx + show_w]
-                listofnum.pop()
+                score_idx -= 1
+                score -= int(listofnum.pop())
+                print("撤销上一打分点%d, 当前打分点%d, 当前总分%d" % (score_idx+1,score_idx, score))
                 mouse(0, 0, 0, 0, 0)
             else:
                 print("No more changes to revert.")

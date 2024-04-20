@@ -100,7 +100,7 @@ def mouse(event, x, y, flags, param):
     elif event == cv2.EVENT_LBUTTONUP:  # 左键释放
         flag, flag_hor, flag_ver = 0, 0, 0
         x1, y1, x2, y2, x3, y3 = 0, 0, 0, 0, 0, 0
-    elif event == cv2.EVENT_LBUTTONDBLCLK:
+    elif event == cv2.EVENT_RBUTTONDOWN:
         truex = x + dx
         truey = y + dy
         CoordinateX.append(truex)
@@ -154,6 +154,7 @@ def tag_pic(image):
     f1, f2 = (img_w - show_w) / (win_w - scroll_har), (img_h - show_h) / (win_h - scroll_var)  # 原图可移动部分占滚动条可移动部分的比例
     CoordinateX = []  # 选中点的X坐标集合
     CoordinateY = []  # 选中点的Y坐标集合
+    imgHistory = []  #存储图片历史记录
     if img_h <= show_h and img_w <= show_w:
         cv2.imshow("img", img)
         cv2.destroyAllWindows()
@@ -173,13 +174,15 @@ def tag_pic(image):
     mouse(0, 0, 0, 0, 0)
     while(1):
         cv2.imshow("img", dst1)
+        mouse(0, 0, 0, 0, 0)
         k = cv2.waitKey(20) & 0xFF
         if k == 27:
             cv2.destroyAllWindows()
             break
         elif k >=48 and k <=57:
             img1 = img[dy:dy + show_h, dx:dx + show_w]  # 截取显示图片
-            cv2.putText(img1, chr(k) , (truex-dx,truey-dy), cv2.FONT_HERSHEY_SIMPLEX, 
+            imgHistory.append(img.copy())
+            cv2.putText(img1, chr(k) , (truex-dx,truey-dy), cv2.FONT_HERSHEY_SIMPLEX,
                         2, (0, 0, 255), 10, cv2.LINE_AA)
             listofnum.append(chr(k))
             score = score + k - 48
@@ -189,12 +192,21 @@ def tag_pic(image):
             mouse(0, 0, 0, 0, 0)
         elif k == 113:
             img1 = img[dy:dy + show_h, dx:dx + show_w]  # 截取显示图片
-            cv2.putText(img1, "%d"%(score) , (truex-dx,truey-dy), cv2.FONT_HERSHEY_SIMPLEX, 
+            cv2.putText(img1, "%d"%(score) , (truex-dx,truey-dy), cv2.FONT_HERSHEY_SIMPLEX,
                         2, (0, 0, 255), 10, cv2.LINE_AA)
             listofnum.append("%d"%(score))
             print("标记总分%d"%(score))
             dst = img1.copy()
+            imgHistory.append(dst)
             mouse(0, 0, 0, 0, 0)
+        elif k == 122:
+            if len(imgHistory) > 0:
+                img = imgHistory.pop()
+                dst = img[dy:dy + show_h, dx:dx + show_w]
+                listofnum.pop()
+                mouse(0, 0, 0, 0, 0)
+            else:
+                print("No more changes to revert.")
         elif k == 97:
             cv2.destroyAllWindows()
             image = np.rot90(image)
